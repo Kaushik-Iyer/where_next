@@ -1,0 +1,298 @@
+body,
+html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #ffffff;
+}
+
+#container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 40px;
+    box-sizing: border-box;
+    gap: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin: 0;
+    color: #1a1a1a;
+    font-weight: 700;
+}
+
+header p {
+    font-size: 1.1rem;
+    color: #666;
+    margin: 8px 0 0 0;
+}
+
+#search-container {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+}
+
+#location-search {
+    width: 50%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#map {
+    flex-grow: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+#controls {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 20px 0;
+}
+
+select,
+button {
+    padding: 12px 20px;
+    border: 1px solid #eaeaea;
+    border-radius: 6px;
+    background-color: white;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    min-width: 120px;
+}
+
+select:hover,
+button:hover {
+    border-color: #ddd;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+button {
+    cursor: pointer;
+    font-weight: 500;
+}
+
+#random {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+}
+
+#random:hover {
+    background-color: #45a049;
+}
+
+#reset {
+    background-color: #f8f9fa;
+    color: #1a1a1a;
+    border: 1px solid #eaeaea;
+}
+
+#reset:hover {
+    background-color: #e9ecef;
+}
+
+/* Style for Google Places Autocomplete dropdown */
+.pac-container {
+    border-radius: 6px;
+    margin-top: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #eaeaea;
+}
+
+.pac-item {
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+.pac-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Add new styles for the places panel */
+.places-panel {
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 400px;
+    background: white;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    z-index: 1000;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    padding: 20px;
+}
+
+.places-panel.active {
+    transform: translateX(0);
+}
+
+.places-panel-header {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 2;
+}
+
+.places-panel-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    padding: 5px;
+}
+
+.place-cards-container {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.place-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+    cursor: pointer;
+    border: none;
+    /* Removed border from original styles */
+}
+
+.place-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.place-card-number {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.place-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+}
+
+.place-card-content {
+    padding: 16px;
+}
+
+.place-card-content h4 {
+    margin: 0 0 8px 0;
+    font-family: "Playfair Display", serif;
+    font-size: 1.2rem;
+    color: #2c3e50;
+}
+
+.place-card-content p {
+    margin: 0;
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.places-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    max-width: 800px;
+    padding: 1rem;
+}
+
+/* Style for the connection lines */
+.place-connection {
+    stroke: #3498db;
+    stroke-width: 2;
+    stroke-dasharray: 4;
+    animation: dash 20s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes dash {
+    to {
+        stroke-dashoffset: -1000;
+    }
+}
+
+/* Marker styles */
+.place-marker {
+    width: 30px;
+    height: 30px;
+    background: white;
+    border: 2px solid #3498db;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: #3498db;
+    transition: all 0.2s ease;
+}
+
+.place-marker:hover {
+    background: #3498db;
+    color: white;
+    transform: scale(1.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .places-panel {
+        width: 100%;
+        height: 50%;
+        bottom: 0;
+        top: auto;
+        transform: translateY(100%);
+    }
+
+    .places-panel.active {
+        transform: translateY(0);
+    }
+}
+
+.photo-placeholder {
+    width: 100%;
+    height: 150px;
+    background: #f0f0f0;
+}

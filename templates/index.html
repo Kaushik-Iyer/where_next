@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Where Next? - Your Travel Companion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div id="container">
+        <header>
+            <h1>Where Next?</h1>
+            <p>Let your wanderlust guide you to your next destination</p>
+        </header>
+        <div id="search-container">
+            <input id="location-search" type="text" style="display: none;" aria-hidden="true">
+        </div>
+        <div id="map"></div>
+        <div id="controls">
+            <select id="continent-filter">
+                <option value="">Select Continent</option>
+                <option value="Africa">Africa</option>
+                <option value="Asia">Asia</option>
+                <option value="Europe">Europe</option>
+                <option value="North America">North America</option>
+                <option value="South America">South America</option>
+                <option value="Oceania">Oceania</option>
+            </select>
+            <select id="country-filter">
+                <option value="">Select Country</option>
+            </select>
+            <select id="place-type">
+                <option value="">All Places</option>
+                <option value="food">Food</option>
+                <option value="natural_feature">Nature</option>
+                <option value="tourist_attraction">Attractions</option>
+                <option value="historical">History</option>
+                <option value="shopping">Shopping</option>
+            </select>
+            <button id="random">Surprise Me</button>
+            <button id="reset">Reset View</button>
+        </div>
+    </div>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places"></script>
+    <script src="/static/countries.js"></script>
+    <script src="/static/script.js"></script>
+</body>
+
+</html>
