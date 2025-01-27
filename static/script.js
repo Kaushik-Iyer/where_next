@@ -154,7 +154,7 @@ async function searchLocation(query) {
             const toLat = location.lat()
             const toLng = location.lng()
 
-            await smoothTransition(fromLat, fromLng, toLat, toLng)
+            await smoothTransition(map, fromLat, fromLng, toLat, toLng)
 
             fetchNearbyPlaces(toLat, toLng)
         } else {
@@ -178,7 +178,7 @@ async function onMapClick(e) {
     const toLat = e.latLng.lat()
     const toLng = e.latLng.lng()
 
-    await smoothTransition(fromLat, fromLng, toLat, toLng)
+    await smoothTransition(map, fromLat, fromLng, toLat, toLng)
     fetchNearbyPlaces(toLat, toLng)
 }
 
@@ -351,7 +351,7 @@ async function getRandomPlace() {
         const place = await response.json()
 
         const currentCenter = map.getCenter()
-        await smoothTransition(currentCenter.lat(), currentCenter.lng(), place.lat, place.lng)
+        await smoothTransition(map, currentCenter.lat(), currentCenter.lng(), place.lat, place.lng)
 
         fetchNearbyPlaces(place.lat, place.lng)
     } finally {

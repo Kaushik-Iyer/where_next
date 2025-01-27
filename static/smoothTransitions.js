@@ -50,7 +50,7 @@ export async function smoothFitBounds(map, bounds, padding, duration = 1000) {
     ])
 }
 
-export async function smoothTransition(fromLat, fromLng, toLat, toLng) {
+export async function smoothTransition(map, fromLat, fromLng, toLat, toLng) {
     const bounds = new google.maps.LatLngBounds()
     bounds.extend(new google.maps.LatLng(fromLat, fromLng))
     bounds.extend(new google.maps.LatLng(toLat, toLng))
