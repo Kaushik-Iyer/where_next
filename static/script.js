@@ -496,8 +496,36 @@ style.textContent = `
         padding: 0;
         border-radius: 8px;
     }
+
+    #loading-message {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(52, 152, 219, 0.9);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 25px;
+        font-size: 18px;
+        font-weight: 500;
+        z-index: 1000;
+        display: none;
+    }
 `
 document.head.appendChild(style)
+
+
+function showLoadingMessage(message) {
+    const loadingDiv = document.getElementById('loading-message')
+    loadingDiv.textContent = message
+    loadingDiv.style.display = 'block'
+}
+
+function hideLoadingMessage() {
+    const loadingDiv = document.getElementById('loading-message')
+    loadingDiv.style.display = 'none'
+}
+
 
 async function getRandomPlace() {
     const continentFilter = document.getElementById("continent-filter")
@@ -505,20 +533,31 @@ async function getRandomPlace() {
     const selectedContinent = continentFilter.value
     const selectedCountry = countryFilter.value
 
-    let url = "/random"
+    let loadingMessage = "Finding a surprise destination..."
     if (selectedCountry) {
-        url += `?country=${encodeURIComponent(selectedCountry)}`
+        loadingMessage = `Finding an interesting place in ${selectedCountry}...`
     } else if (selectedContinent) {
-        url += `?continent=${encodeURIComponent(selectedContinent)}`
+        loadingMessage = `Finding an interesting place in ${selectedContinent}...`
     }
+    showLoadingMessage(loadingMessage)
+    try {
+        let url = "/random"
+        if (selectedCountry) {
+            url += `?country=${encodeURIComponent(selectedCountry)}`
+        } else if (selectedContinent) {
+            url += `?continent=${encodeURIComponent(selectedContinent)}`
+        }
 
-    const response = await fetch(url)
-    const place = await response.json()
+        const response = await fetch(url)
+        const place = await response.json()
 
-    const currentCenter = map.getCenter()
-    await smoothTransition(currentCenter.lat(), currentCenter.lng(), place.lat, place.lng)
+        const currentCenter = map.getCenter()
+        await smoothTransition(currentCenter.lat(), currentCenter.lng(), place.lat, place.lng)
 
-    fetchNearbyPlaces(place.lat, place.lng)
+        fetchNearbyPlaces(place.lat, place.lng)
+    } finally {
+        hideLoadingMessage()
+    }
 }
 
 async function resetView() {
