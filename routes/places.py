@@ -12,7 +12,7 @@ async def get_places(lat: float, lng: float, place_type: str = None):
         places_url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
         places_params = {
             "location": f"{lat},{lng}",
-            "radius": "10000",
+            "radius": "10000", # 10km radius
             "type": "tourist_attraction" if not place_type else place_type,
             "key": GOOGLE_PLACES_API_KEY
         }

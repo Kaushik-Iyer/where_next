@@ -169,21 +169,33 @@ function onPlaceTypeChange() {
 }
 
 async function onMapClick(e) {
-    const currentCenter = map.getCenter()
-    const fromLat = currentCenter.lat()
-    const fromLng = currentCenter.lng()
+    const currentCenter = map.getCenter();
+    const fromLat = currentCenter.lat();
+    const fromLng = currentCenter.lng();
+    const toLat = e.latLng.lat();
+    const toLng = e.latLng.lng();
 
-    const toLat = e.latLng.lat()
-    const toLng = e.latLng.lng()
+    const placeType = document.getElementById("place-type").value;
 
-    await smoothTransition(fromLat, fromLng, toLat, toLng)
-    fetchNearbyPlaces(toLat, toLng)
+    await smoothTransition(fromLat, fromLng, toLat, toLng);
+    fetchNearbyPlaces(toLat, toLng, placeType);
 }
 
-async function fetchNearbyPlaces(lat, lng) {
-    const response = await fetch(`/places?lat=${lat}&lng=${lng}`)
-    const data = await response.json()
-    displayPlaces(data, lat, lng)
+async function fetchNearbyPlaces(lat, lng, type) {
+    // Get place type from dropdown if not provided
+    if (!type) {
+        type = document.getElementById("place-type").value;
+    }
+
+    // Build URL with parameters
+    let url = `/places?lat=${lat}&lng=${lng}`;
+    if (type && type !== "") {
+        url += `&place_type=${type}`;
+    }
+
+    const response = await fetch(url);
+    const data = await response.json();
+    displayPlaces(data, lat, lng);
 }
 
 // Add new function for fetching place photo
