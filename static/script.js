@@ -48,7 +48,10 @@ async function smoothFitBounds(map, bounds, padding, duration = 1000) {
     map.setCenter(startCenter)
     map.setZoom(startZoom)
 
-    await Promise.all([smoothPan(map, endCenter.lat(), endCenter.lng(), duration), smoothZoom(map, endZoom, duration)])
+    await Promise.all([
+        smoothPan(map, endCenter.lat(), endCenter.lng(), duration),
+        smoothZoom(map, endZoom, duration)
+    ])
 }
 
 async function initMap() {
@@ -124,10 +127,10 @@ function populateCountryFilter() {
     const countryFilter = document.getElementById("country-filter")
     countryFilter.innerHTML = '<option value="">Select Country</option>'
 
-    countries.sort().forEach((country) => {
+    countries.sort((a, b) => a.name.localeCompare(b.name)).forEach((country) => {
         const option = document.createElement("option")
-        option.value = country
-        option.textContent = country
+        option.value = country.name
+        option.textContent = country.name
         countryFilter.appendChild(option)
     })
 }
@@ -155,8 +158,7 @@ function onContinentChange() {
     countryFilter.disabled = !selectedContinent
 
     if (selectedContinent) {
-        Object.values(countries)
-            .filter((country) => country.continent === selectedContinent)
+        countries
             .sort((a, b) => a.name.localeCompare(b.name))
             .forEach((country) => {
                 const option = document.createElement("option")
@@ -173,8 +175,14 @@ function onCountryChange() {
     const selectedCountry = countryFilter.value
 
     if (selectedCountry) {
-        searchInput.value = selectedCountry
-        searchLocation(selectedCountry)
+        const country = countries.find(c => c.name === selectedCountry)
+        if (country && country.capital) {
+            searchInput.value = country.capital
+            searchLocation(country.capital)
+        } else {
+            searchInput.value = selectedCountry
+            searchLocation(selectedCountry)
+        }
     }
 }
 
@@ -194,6 +202,8 @@ async function searchLocation(query) {
             await smoothTransition(fromLat, fromLng, toLat, toLng)
 
             fetchNearbyPlaces(toLat, toLng)
+        } else {
+            console.error("Geocoding failed: " + status)
         }
     })
 }
@@ -531,4 +541,3 @@ async function resetView() {
 }
 
 document.addEventListener("DOMContentLoaded", initMap)
-
