@@ -263,6 +263,7 @@ async function displayPlaces(data, lat, lng) {
 
         const card = document.createElement("div")
         card.className = "place-card"
+        const mapsUrl = `https://www.google.com/maps/place/?q=place_id:${place.place_id}`
         card.innerHTML = `
             <div class="place-card-number">${index + 1}</div>
             ${place.photo_url
@@ -272,6 +273,7 @@ async function displayPlaces(data, lat, lng) {
             <div class="place-card-content">
                 <h4>${place.name}</h4>
                 <p>${place.description}</p>
+                <a href="${mapsUrl}" target="_blank">View on Google Maps</a>
             </div>
         `
 
@@ -284,9 +286,13 @@ async function displayPlaces(data, lat, lng) {
             marker.setAnimation(null)
         })
 
-        card.addEventListener("click", async () => {
-            await smoothPan(map, place.location.lat, place.location.lng)
-            await smoothZoom(map, 15)
+        const content = card.querySelector('.place-card-content')
+        content.addEventListener("click", async (e) => {
+            // Only zoom if not clicking the link
+            if (!e.target.matches('a')) {
+                await smoothPan(map, place.location.lat, place.location.lng)
+                await smoothZoom(map, 15)
+            }
         })
 
         cardsContainer.appendChild(card)

@@ -20,9 +20,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 from routes.home import router as home_router
 from routes.places import router as places_router
 from routes.random_place import router as random_router
-from routes.place_photo import router as photo_router
 
 app.include_router(home_router)
 app.include_router(places_router)
 app.include_router(random_router)
-app.include_router(photo_router)

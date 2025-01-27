@@ -39,7 +39,8 @@ async def process_single_place(place: dict, client: httpx.AsyncClient, api_key: 
                 "lng": place["geometry"]["location"]["lng"]
             },
             "description": description,
-            "photo_url": photo_url
+            "photo_url": photo_url,
+            "place_id": place["place_id"]
         }
     except Exception as e:
         print(f"Error processing place: {str(e)}")
