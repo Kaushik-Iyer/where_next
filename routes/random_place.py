@@ -89,8 +89,8 @@ async def get_global_random():
     max_attempts = 10
     attempts = 0
     while attempts < max_attempts:
-        lat = random.uniform(-90, 90)
-        lng = random.uniform(-180, 180)
+        lat = random.uniform(20, 60)
+        lng = random.uniform(-120, 20)
         if await is_on_land(lat, lng):
             url = "https://maps.googleapis.com/maps/api/geocode/json"
             params = {"latlng": f"{lat},{lng}", "key": GOOGLE_MAPS_API_KEY}
