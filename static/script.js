@@ -3,9 +3,57 @@ let currentMarker
 let infoWindow
 let autocomplete
 
+async function smoothZoom(map, targetZoom, duration = 1000) {
+    const startZoom = map.getZoom()
+    const steps = 20
+    const stepDuration = duration / steps
+
+    for (let i = 0; i <= steps; i++) {
+        const progress = i / steps
+        const currentZoom = startZoom + (targetZoom - startZoom) * progress
+        await new Promise((resolve) => {
+            setTimeout(() => {
+                map.setZoom(currentZoom)
+                resolve()
+            }, stepDuration)
+        })
+    }
+}
+
+async function smoothPan(map, targetLat, targetLng, duration = 1000) {
+    const startLat = map.getCenter().lat()
+    const startLng = map.getCenter().lng()
+    const steps = 20
+    const stepDuration = duration / steps
+
+    for (let i = 0; i <= steps; i++) {
+        const progress = i / steps
+        const currentLat = startLat + (targetLat - startLat) * progress
+        const currentLng = startLng + (targetLng - startLng) * progress
+        await new Promise((resolve) => {
+            setTimeout(() => {
+                map.panTo({ lat: currentLat, lng: currentLng })
+                resolve()
+            }, stepDuration)
+        })
+    }
+}
+
+async function smoothFitBounds(map, bounds, padding, duration = 1000) {
+    const startCenter = map.getCenter()
+    const startZoom = map.getZoom()
+    map.fitBounds(bounds, padding)
+    const endCenter = map.getCenter()
+    const endZoom = map.getZoom()
+    map.setCenter(startCenter)
+    map.setZoom(startZoom)
+
+    await Promise.all([smoothPan(map, endCenter.lat(), endCenter.lng(), duration), smoothZoom(map, endZoom, duration)])
+}
+
 async function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: 20, lng: 0 }, // Slightly offset from 0,0 to show more land
+        center: { lat: 20, lng: 0 },
         zoom: 2,
         styles: [
             {
@@ -26,8 +74,8 @@ async function initMap() {
         ],
         disableDefaultUI: true,
         mapTypeId: "roadmap",
-        minZoom: 2, // Prevent zooming out too far
-        maxZoom: 15, // Prevent zooming in too much
+        minZoom: 2,
+        maxZoom: 15,
         restriction: {
             latLngBounds: {
                 north: 85,
@@ -41,18 +89,15 @@ async function initMap() {
 
     infoWindow = new google.maps.InfoWindow()
 
-    // Initialize Places Autocomplete
     const input = document.getElementById("location-search")
     autocomplete = new google.maps.places.Autocomplete(input, {
         types: ["(regions)"],
     })
 
-    // Bind autocomplete to map
     autocomplete.bindTo("bounds", map)
     populateCountryFilter()
 
-    // Handle place selection
-    autocomplete.addListener("place_changed", () => {
+    autocomplete.addListener("place_changed", async () => {
         const place = autocomplete.getPlace()
 
         if (!place.geometry || !place.geometry.location) {
@@ -61,10 +106,10 @@ async function initMap() {
         }
 
         if (place.geometry.viewport) {
-            map.fitBounds(place.geometry.viewport)
+            await smoothFitBounds(map, place.geometry.viewport, 0)
         } else {
-            map.setCenter(place.geometry.location)
-            map.setZoom(8)
+            await smoothPan(map, place.geometry.location.lat(), place.geometry.location.lng())
+            await smoothZoom(map, 8)
         }
 
         fetchNearbyPlaces(place.geometry.location.lat(), place.geometry.location.lng())
@@ -79,7 +124,6 @@ function populateCountryFilter() {
     const countryFilter = document.getElementById("country-filter")
     countryFilter.innerHTML = '<option value="">Select Country</option>'
 
-    // Use the imported countries array directly
     countries.sort().forEach((country) => {
         const option = document.createElement("option")
         option.value = country
@@ -102,10 +146,8 @@ function onContinentChange() {
     const searchInput = document.getElementById("location-search")
     const selectedContinent = continentFilter.value
 
-    // Update search input to reflect selection
     if (selectedContinent) {
         searchInput.value = selectedContinent
-        // Trigger a search for the continent
         searchLocation(selectedContinent)
     }
 
@@ -131,9 +173,7 @@ function onCountryChange() {
     const selectedCountry = countryFilter.value
 
     if (selectedCountry) {
-        // Update search input to reflect selection
         searchInput.value = selectedCountry
-        // Trigger a search for the country
         searchLocation(selectedCountry)
     }
 }
@@ -141,7 +181,6 @@ function onCountryChange() {
 async function searchLocation(query) {
     const geocoder = new google.maps.Geocoder()
 
-    // Get current center for transition
     const currentCenter = map.getCenter()
     const fromLat = currentCenter.lat()
     const fromLng = currentCenter.lng()
@@ -152,10 +191,8 @@ async function searchLocation(query) {
             const toLat = location.lat()
             const toLng = location.lng()
 
-            // Smooth transition to new location
             await smoothTransition(fromLat, fromLng, toLat, toLng)
 
-            // Fetch places after transition
             fetchNearbyPlaces(toLat, toLng)
         }
     })
@@ -169,36 +206,28 @@ function onPlaceTypeChange() {
 }
 
 async function onMapClick(e) {
-    const currentCenter = map.getCenter();
-    const fromLat = currentCenter.lat();
-    const fromLng = currentCenter.lng();
-    const toLat = e.latLng.lat();
-    const toLng = e.latLng.lng();
+    const currentCenter = map.getCenter()
+    const fromLat = currentCenter.lat()
+    const fromLng = currentCenter.lng()
 
-    const placeType = document.getElementById("place-type").value;
+    const toLat = e.latLng.lat()
+    const toLng = e.latLng.lng()
 
-    await smoothTransition(fromLat, fromLng, toLat, toLng);
-    fetchNearbyPlaces(toLat, toLng, placeType);
+    await smoothTransition(fromLat, fromLng, toLat, toLng)
+    fetchNearbyPlaces(toLat, toLng)
 }
 
-async function fetchNearbyPlaces(lat, lng, type) {
-    // Get place type from dropdown if not provided
-    if (!type) {
-        type = document.getElementById("place-type").value;
+async function fetchNearbyPlaces(lat, lng) {
+    const placeType = document.getElementById("place-type").value
+    let url = `/places?lat=${lat}&lng=${lng}`
+    if (placeType) {
+        url += `&place_type=${placeType}`
     }
-
-    // Build URL with parameters
-    let url = `/places?lat=${lat}&lng=${lng}`;
-    if (type && type !== "") {
-        url += `&place_type=${type}`;
-    }
-
-    const response = await fetch(url);
-    const data = await response.json();
-    displayPlaces(data, lat, lng);
+    const response = await fetch(url)
+    const data = await response.json()
+    displayPlaces(data, lat, lng)
 }
 
-// Add new function for fetching place photo
 async function fetchPlacePhoto(placeName) {
     try {
         const response = await fetch(`/place_photo?place_name=${encodeURIComponent(placeName)}`)
@@ -212,8 +241,7 @@ async function fetchPlacePhoto(placeName) {
 
 let polylines = []
 
-function displayPlaces(data, lat, lng) {
-    // Clear existing markers and lines
+async function displayPlaces(data, lat, lng) {
     polylines.forEach((line) => line.setMap(null))
     polylines = []
 
@@ -221,18 +249,15 @@ function displayPlaces(data, lat, lng) {
         currentMarker.setMap(null)
     }
 
-    // Remove existing places panel if any
     const existingPanel = document.querySelector(".places-panel")
     if (existingPanel) {
         existingPanel.remove()
     }
 
-    // Create places panel
     const placesPanel = document.createElement("div")
     placesPanel.className = "places-panel"
     document.body.appendChild(placesPanel)
 
-    // Add panel header
     placesPanel.innerHTML = `
         <div class="places-panel-header">
             <h3>Nearby Places</h3>
@@ -241,17 +266,14 @@ function displayPlaces(data, lat, lng) {
         <div class="place-cards-container"></div>
     `
 
-    // Add close button functionality
     const closeButton = placesPanel.querySelector(".places-panel-close")
     closeButton.addEventListener("click", () => {
         placesPanel.classList.remove("active")
     })
 
-    // Create bounds to include all points
     const bounds = new google.maps.LatLngBounds()
     bounds.extend(new google.maps.LatLng(lat, lng))
 
-    // Add origin marker
     currentMarker = new google.maps.Marker({
         position: { lat, lng },
         map: map,
@@ -265,14 +287,11 @@ function displayPlaces(data, lat, lng) {
         },
     })
 
-    // Create cards container
     const cardsContainer = placesPanel.querySelector(".place-cards-container")
 
-    // Add place cards and markers
     data.places.forEach((place, index) => {
         bounds.extend(new google.maps.LatLng(place.location.lat, place.location.lng))
 
-        // Create marker for place
         const marker = new google.maps.Marker({
             position: place.location,
             map: map,
@@ -284,7 +303,6 @@ function displayPlaces(data, lat, lng) {
             },
         })
 
-        // Create card
         const card = document.createElement("div")
         card.className = "place-card"
         card.innerHTML = `
@@ -299,7 +317,6 @@ function displayPlaces(data, lat, lng) {
             </div>
         `
 
-        // Add hover interaction between card and marker
         card.addEventListener("mouseenter", () => {
             marker.setAnimation(google.maps.Animation.BOUNCE)
             marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1)
@@ -309,15 +326,13 @@ function displayPlaces(data, lat, lng) {
             marker.setAnimation(null)
         })
 
-        // Add click handler to center on location
-        card.addEventListener("click", () => {
-            map.panTo(place.location)
-            map.setZoom(15)
+        card.addEventListener("click", async () => {
+            await smoothPan(map, place.location.lat, place.location.lng)
+            await smoothZoom(map, 15)
         })
 
         cardsContainer.appendChild(card)
 
-        // Draw connecting line
         const line = new google.maps.Polyline({
             path: [{ lat, lng }, place.location],
             geodesic: true,
@@ -329,29 +344,35 @@ function displayPlaces(data, lat, lng) {
         polylines.push(line)
     })
 
-    // Fit map to bounds with padding
-    map.fitBounds(bounds, {
-        padding: {
-            top: 50,
-            right: 400, // Account for panel width
-            bottom: 50,
-            left: 50,
-        },
+    await smoothFitBounds(map, bounds, {
+        top: 50,
+        right: 450,
+        bottom: 50,
+        left: 50,
     })
 
-    // Show panel with animation
     requestAnimationFrame(() => {
         placesPanel.classList.add("active")
     })
 
-    // Adjust zoom if needed
     const zoom = map.getZoom()
-    if (zoom < 5) map.setZoom(5)
-    if (zoom > 12) map.setZoom(12)
+    if (zoom < 5) await smoothZoom(map, 5)
+    if (zoom > 12) await smoothZoom(map, 12)
 }
 
-// Add CSS class for photo placeholder
-// Update CSS styles
+async function smoothTransition(fromLat, fromLng, toLat, toLng) {
+    const bounds = new google.maps.LatLngBounds()
+    bounds.extend(new google.maps.LatLng(fromLat, fromLng))
+    bounds.extend(new google.maps.LatLng(toLat, toLng))
+
+    await smoothZoom(map, 2, 500)
+
+    await smoothFitBounds(map, bounds, 0, 1000)
+
+    await smoothPan(map, toLat, toLng, 500)
+    await smoothZoom(map, 6, 500)
+}
+
 const style = document.createElement("style")
 style.textContent = `
     .places-panel {
@@ -468,33 +489,6 @@ style.textContent = `
 `
 document.head.appendChild(style)
 
-// Add new function for smooth transition
-async function smoothTransition(fromLat, fromLng, toLat, toLng) {
-    // Create bounds to include both points
-    const bounds = new google.maps.LatLngBounds()
-    bounds.extend(new google.maps.LatLng(fromLat, fromLng))
-    bounds.extend(new google.maps.LatLng(toLat, toLng))
-
-    // Smooth zoom out
-    await new Promise((resolve) => {
-        map.setZoom(2)
-        setTimeout(resolve, 500)
-    })
-
-    // Pan to show both points
-    await new Promise((resolve) => {
-        map.fitBounds(bounds)
-        setTimeout(resolve, 1000)
-    })
-
-    // Zoom in to destination
-    await new Promise((resolve) => {
-        map.setCenter({ lat: toLat, lng: toLng })
-        map.setZoom(6)
-        setTimeout(resolve, 500)
-    })
-}
-
 async function getRandomPlace() {
     const continentFilter = document.getElementById("continent-filter")
     const countryFilter = document.getElementById("country-filter")
@@ -517,9 +511,9 @@ async function getRandomPlace() {
     fetchNearbyPlaces(place.lat, place.lng)
 }
 
-function resetView() {
-    map.setCenter({ lat: 20, lng: 0 })
-    map.setZoom(2)
+async function resetView() {
+    await smoothPan(map, 20, 0)
+    await smoothZoom(map, 2)
     if (currentMarker) {
         currentMarker.setMap(null)
     }
@@ -530,7 +524,6 @@ function resetView() {
     document.getElementById("country-filter").value = ""
     document.getElementById("place-type").value = ""
     document.getElementById("location-search").value = ""
-    // Remove places panel on reset
     const placesPanel = document.querySelector(".places-panel")
     if (placesPanel) {
         placesPanel.remove()
