@@ -2,12 +2,8 @@ let map
 let currentMarker
 let infoWindow
 let autocomplete
-import {
-    smoothZoom,
-    smoothPan,
-    smoothFitBounds,
-    smoothTransition
-} from './smoothTransitions.js'
+let placeMarkers = []
+import { smoothZoom, smoothPan, smoothFitBounds, smoothTransition } from "./smoothTransitions.js"
 
 async function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {
@@ -82,12 +78,14 @@ function populateCountryFilter() {
     const countryFilter = document.getElementById("country-filter")
     countryFilter.innerHTML = '<option value="">Select Country</option>'
 
-    countries.sort((a, b) => a.name.localeCompare(b.name)).forEach((country) => {
-        const option = document.createElement("option")
-        option.value = country.name
-        option.textContent = country.name
-        countryFilter.appendChild(option)
-    })
+    countries
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .forEach((country) => {
+            const option = document.createElement("option")
+            option.value = country.name
+            option.textContent = country.name
+            countryFilter.appendChild(option)
+        })
 }
 
 function setupEventListeners() {
@@ -114,6 +112,7 @@ function onContinentChange() {
 
     if (selectedContinent) {
         countries
+            .filter((country) => country.continent === selectedContinent)
             .sort((a, b) => a.name.localeCompare(b.name))
             .forEach((country) => {
                 const option = document.createElement("option")
@@ -130,7 +129,7 @@ function onCountryChange() {
     const selectedCountry = countryFilter.value
 
     if (selectedCountry) {
-        const country = countries.find(c => c.name === selectedCountry)
+        const country = countries.find((c) => c.name === selectedCountry)
         if (country && country.capital) {
             searchInput.value = country.capital
             searchLocation(country.capital)
@@ -199,6 +198,10 @@ async function displayPlaces(data, lat, lng) {
     polylines.forEach((line) => line.setMap(null))
     polylines = []
 
+    // Clear previous place markers
+    placeMarkers.forEach((marker) => marker.setMap(null))
+    placeMarkers = []
+
     if (currentMarker) {
         currentMarker.setMap(null)
     }
@@ -256,6 +259,7 @@ async function displayPlaces(data, lat, lng) {
                 fontWeight: "500",
             },
         })
+        placeMarkers.push(marker)
 
         const card = document.createElement("div")
         card.className = "place-card"
@@ -315,16 +319,15 @@ async function displayPlaces(data, lat, lng) {
 }
 
 function showLoadingMessage(message) {
-    const loadingDiv = document.getElementById('loading-message')
+    const loadingDiv = document.getElementById("loading-message")
     loadingDiv.textContent = message
-    loadingDiv.style.display = 'block'
+    loadingDiv.style.display = "block"
 }
 
 function hideLoadingMessage() {
-    const loadingDiv = document.getElementById('loading-message')
-    loadingDiv.style.display = 'none'
+    const loadingDiv = document.getElementById("loading-message")
+    loadingDiv.style.display = "none"
 }
-
 
 async function getRandomPlace() {
     const continentFilter = document.getElementById("continent-filter")
@@ -376,6 +379,8 @@ async function resetView() {
     if (placesPanel) {
         placesPanel.remove()
     }
+    placeMarkers.forEach((marker) => marker.setMap(null))
 }
 
 document.addEventListener("DOMContentLoaded", initMap)
+
