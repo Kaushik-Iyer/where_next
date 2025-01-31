@@ -94,6 +94,17 @@ function setupEventListeners() {
     document.getElementById("place-type").addEventListener("change", onPlaceTypeChange)
     document.getElementById("random").addEventListener("click", getRandomPlace)
     document.getElementById("reset").addEventListener("click", resetView)
+    const modal = document.getElementById("info-modal");
+    const btn = document.getElementById("info-button");
+    const span = document.querySelector(".close");
+
+    btn.onclick = () => modal.style.display = "block";
+    span.onclick = () => modal.style.display = "none";
+    window.onclick = (event) => {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
 }
 
 function onContinentChange() {

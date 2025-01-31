@@ -16,8 +16,30 @@
 <body>
     <div id="container">
         <header>
-            <h1>Where Next?</h1>
+            <div class="header-content">
+                <h1>Where Next?</h1>
+                <button id="info-button" class="info-button" aria-label="Information">ℹ</button>
+            </div>
         </header>
+        <div id="info-modal" class="modal">
+            <div class="modal-content">
+                <button class="close" aria-label="Close">&times;</button>
+                <h2>About Where Next?</h2>
+                <p class="modal-description">An interactive travel exploration tool that helps you discover interesting
+                    places around the world.</p>
+                <h3>Features:</h3>
+                <ul class="features-list">
+                    <li><span class="feature-icon">🌍</span> Browse by continent or country</li>
+                    <li><span class="feature-icon">🎯</span> Click anywhere on the map to explore nearby attractions
+                    </li>
+                    <li><span class="feature-icon">🎲</span> Use "Surprise Me" for random destinations (If you have a
+                        continent/country selected, the surprise location is chosen from inside that area)</li>
+                    <li><span class="feature-icon">🏷️</span> Filter places by type (museums, parks, restaurants, etc.)
+                    </li>
+                    <li><span class="feature-icon">📍</span> View details and get directions to places</li>
+                </ul>
+            </div>
+        </div>
         <div id="search-container">
             <input id="location-search" type="text" style="display: none;" aria-hidden="true">
         </div>

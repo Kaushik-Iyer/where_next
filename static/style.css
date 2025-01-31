@@ -382,7 +382,7 @@ button {
 }
 
 .photo-placeholder::before {
-    content: 'No Photo';
+    content: "No Photo";
     font-style: italic;
     color: #aaa;
 }
@@ -424,4 +424,125 @@ button {
     font-weight: 500;
     z-index: 1000;
     display: none;
+}
+
+.header-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-button {
+    position: static;
+    transform: none;
+    right: auto;
+    top: auto;
+    background: none;
+    border: none;
+    color: var(--color-accent);
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background-color: var(--color-background);
+    margin: 8% auto;
+    padding: 2rem;
+    width: 90%;
+    max-width: 600px;
+    border-radius: var(--radius-md);
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.close {
+    position: absolute;
+    right: 1.5rem;
+    top: 1.5rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    background: none;
+    border: none;
+    padding: 4px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.close:hover {
+    background-color: rgba(44, 24, 16, 0.05);
+}
+
+.modal-content h2 {
+    color: var(--color-accent);
+    margin-bottom: 1rem;
+    font-family: var(--font-heading);
+    font-size: 2rem;
+}
+
+.modal-description {
+    color: var(--color-text);
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.modal-content h3 {
+    color: var(--color-text);
+    font-family: var(--font-heading);
+    margin: 1.5rem 0 1rem;
+    font-size: 1.5rem;
+}
+
+.features-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.features-list li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    color: var(--color-text);
+    font-size: 1.1rem;
+}
+
+.feature-icon {
+    margin-right: 1rem;
+    font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        margin: 5% auto;
+        padding: 1.5rem;
+        width: 95%;
+    }
 }
